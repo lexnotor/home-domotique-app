@@ -6,6 +6,11 @@ sealed class BTConnectionEvents {}
 
 final class CheckBTState extends BTConnectionEvents {}
 
+final class UpdateBluetoothConnection extends BTConnectionEvents {
+  final BluetoothConnection? bluetoothConnection;
+  UpdateBluetoothConnection(this.bluetoothConnection);
+}
+
 final class GetBTAddressField extends BTConnectionEvents {}
 
 final class GetBTName extends BTConnectionEvents {}
@@ -21,6 +26,10 @@ class BTConnectionBloc extends Bloc<BTConnectionEvents, BTConnection> {
     );
 
     on<GetBTAddressField>((event, emit) => null);
+
+    on<UpdateBluetoothConnection>((event, emit) {
+      emit(state.copyWith(connection: event.bluetoothConnection));
+    });
   }
 
   Future<BluetoothState> checkState() async {

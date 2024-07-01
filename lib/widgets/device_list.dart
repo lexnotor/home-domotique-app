@@ -17,7 +17,7 @@ class DeviceList extends StatelessWidget {
             final result = state.devices[index];
 
             return DeviceCard(
-              bluetoothDevice: result.device,
+              discoveryResult: result,
             );
           },
           padding: const EdgeInsets.all(20),

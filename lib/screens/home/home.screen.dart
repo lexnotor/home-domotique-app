@@ -17,27 +17,29 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      floatingActionButton: const AddRoom(),
-      body: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => BTConnectionBloc(),
-          ),
-          BlocProvider(
-            create: (context) => BTDevicesBloc(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => BTConnectionBloc(),
+        ),
+        BlocProvider(
+          create: (context) {
+            return BTDevicesBloc(
               const BTDevices(),
+            );
+          },
+        ),
+        BlocProvider(
+          create: (context) => RoomBloc([])
+            ..add(
+              InitEvent(),
             ),
-          ),
-          BlocProvider(
-            create: (context) => RoomBloc([])
-              ..add(
-                InitEvent(),
-              ),
-          ),
-        ],
-        child: Container(
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        floatingActionButton: const AddRoom(),
+        body: Container(
           color: backgroundColor,
           child: SafeArea(
             child: DefaultTextStyle(

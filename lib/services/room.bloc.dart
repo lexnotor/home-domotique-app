@@ -7,14 +7,11 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 
 sealed class RoomEvents {}
 
-final class PowerOnRoom extends RoomEvents {
+final class SwitchRoom extends RoomEvents {
+  final bool roomState;
   final Room room;
-  PowerOnRoom(this.room);
-}
 
-final class PowerOffRoom extends RoomEvents {
-  final Room room;
-  PowerOffRoom(this.room);
+  SwitchRoom(this.room, this.roomState);
 }
 
 final class CheckRoomsState extends RoomEvents {}
@@ -32,18 +29,15 @@ final class NewRoom extends RoomEvents {
 final class InitEvent extends RoomEvents {}
 
 class RoomBloc extends Bloc<RoomEvents, List<Room>> {
-  late SharedPreferences? _prefs;
+  SharedPreferences? _prefs;
   static const _checkCmd = -1;
 
   RoomBloc(List<Room> rooms) : super(rooms) {
-    on<PowerOnRoom>((event, emit) {
-      sendCmd(event.room.upCmd);
-      add(CheckRoomsState());
-    }, transformer: sequential());
-
-    on<PowerOffRoom>((event, emit) {
-      sendCmd(event.room.downCmd);
-      add(CheckRoomsState());
+    on<SwitchRoom>((event, emit) {
+      final newList = [...state];
+      newList[newList.indexOf(event.room)] =
+          event.room.copyWith(state: event.roomState);
+      emit(newList);
     }, transformer: sequential());
 
     on<CheckRoomsState>((event, emit) {
@@ -80,14 +74,18 @@ class RoomBloc extends Bloc<RoomEvents, List<Room>> {
   }
 
   Future<List<Room>> _deserialize() async {
+    _prefs ??= await SharedPreferences.getInstance();
+
     try {
       final json = jsonDecode(
         _prefs?.getString("rooms") ?? jsonEncode({"rooms": []}),
-      ) as Map<String, List<Map<String, dynamic>>>;
+      ) as Map<String, dynamic>;
 
       final rooms = json["rooms"]
-          ?.map(
-            (json) => Room.fromJson(json),
+          ?.map<Room>(
+            (json) => Room.fromJson(
+              json,
+            ),
           )
           .toList();
       return rooms ?? [];
@@ -97,6 +95,8 @@ class RoomBloc extends Bloc<RoomEvents, List<Room>> {
   }
 
   Future<void> _serialize(List<Room> rooms) async {
+    _prefs ??= await SharedPreferences.getInstance();
+
     try {
       final json = rooms
           .map(

@@ -58,6 +58,7 @@ class _NewRoomFormState extends State<NewRoomForm> {
           const SizedBox(height: 30),
           FilledButton(
             onPressed: () {
+              submit();
               Navigator.of(context).pop();
             },
             style: IconButton.styleFrom(

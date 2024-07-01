@@ -19,7 +19,11 @@ class RoomList extends StatelessWidget {
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
                 padding: const EdgeInsets.all(20),
-                children: state.map((e) => const RoomCard()).toList(),
+                children: state
+                    .map((room) => RoomCard(
+                          room: room,
+                        ))
+                    .toList(),
               )
             : Center(
                 child: RichText(

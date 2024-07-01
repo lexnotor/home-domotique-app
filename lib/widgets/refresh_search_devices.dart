@@ -21,7 +21,6 @@ class _RefreshSearchDevicesState extends State<RefreshSearchDevices> {
 
   @override
   void initState() {
-    searchDevices();
     super.initState();
   }
 
@@ -64,31 +63,46 @@ class _RefreshSearchDevicesState extends State<RefreshSearchDevices> {
       return;
     }
 
+    await FlutterBluetoothSerial.instance
+        .getBondedDevices()
+        .then((bondedDevices) {
+      if (context.mounted) {
+        context.read<BTDevicesBloc>().add(SetBondedDevices(bondedDevices));
+      }
+    });
+
     await FlutterBluetoothSerial.instance.cancelDiscovery();
+
+    if (context.mounted) {
+      context.read<BTDevicesBloc>().add(SearchDevices(true));
+    }
 
     _streamSubscription =
         FlutterBluetoothSerial.instance.startDiscovery().listen(
       (discoveryResult) {
         context.read<BTDevicesBloc>().add(NewDeviceDiscovered(discoveryResult));
       },
-      onDone: () {
-        print("onDone: Finish");
-        context.read<BTDevicesBloc>().add(SearchDevices(false));
-      },
       onError: (error) {
-        print(error);
-        context.read<BTDevicesBloc>().add(SearchDevices(false));
+        if (context.mounted) {
+          context.read<BTDevicesBloc>().add(SearchDevices(false));
+        }
       },
     );
-    if (context.mounted) {
-      context.read<BTDevicesBloc>().add(SearchDevices(true));
-    }
+    _streamSubscription?.onDone(() {
+      if (context.mounted) {
+        context.read<BTDevicesBloc>().add(SearchDevices(false));
+      }
+    });
   }
 
   Future<bool> requestBluetoothPermission() async {
     PermissionStatus bluetoothStatus = await Permission.bluetoothScan.request();
     PermissionStatus locationStatus = await Permission.location.request();
+    PermissionStatus connectStatus =
+        await Permission.bluetoothConnect.request();
 
-    return bluetoothStatus.isGranted && locationStatus.isGranted;
+    return bluetoothStatus.isGranted &&
+        locationStatus.isGranted &&
+        connectStatus.isGranted;
   }
 }

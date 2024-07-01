@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:home_domotique/constant.dart';
+import 'package:home_domotique/services/room.bloc.dart';
 import 'package:home_domotique/widgets/custom_button.dart';
 import 'package:home_domotique/widgets/new_room_form.dart';
 
@@ -16,14 +18,21 @@ class AddRoom extends StatelessWidget {
           showDragHandle: true,
           context: context,
           builder: (buildCtx) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: const SizedBox(
-                height: 400,
-                child: SingleChildScrollView(
-                  child: NewRoomForm(),
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider.value(
+                  value: context.read<RoomBloc>(),
+                )
+              ],
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: const SizedBox(
+                  height: 400,
+                  child: SingleChildScrollView(
+                    child: NewRoomForm(),
+                  ),
                 ),
               ),
             );
