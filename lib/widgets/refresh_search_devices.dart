@@ -93,6 +93,12 @@ class _RefreshSearchDevicesState extends State<RefreshSearchDevices> {
         context.read<BTDevicesBloc>().add(SearchDevices(false));
       }
     });
+
+    await Future.delayed(const Duration(seconds: 10));
+    await FlutterBluetoothSerial.instance.cancelDiscovery();
+    if (context.mounted) {
+      context.read<BTDevicesBloc>().add(SearchDevices(false));
+    }
   }
 
   Future<bool> requestBluetoothPermission() async {

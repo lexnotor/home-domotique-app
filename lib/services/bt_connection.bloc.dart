@@ -28,7 +28,17 @@ class BTConnectionBloc extends Bloc<BTConnectionEvents, BTConnection> {
     on<GetBTAddressField>((event, emit) => null);
 
     on<UpdateBluetoothConnection>((event, emit) {
-      emit(state.copyWith(connection: event.bluetoothConnection));
+      if (event.bluetoothConnection?.isConnected ?? false) {
+        event.bluetoothConnection?.input?.listen((event) {}).onDone(() {
+          add(UpdateBluetoothConnection(null));
+        });
+      }
+      emit(
+        state.copyWith(
+          connection: event.bluetoothConnection,
+          setToNull: true,
+        ),
+      );
     });
   }
 

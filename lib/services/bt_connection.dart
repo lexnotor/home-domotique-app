@@ -18,12 +18,13 @@ class BTConnection {
     String? address,
     String? name,
     BluetoothConnection? connection,
+    bool setToNull = false,
   }) {
     return BTConnection(
       state: state ?? this.state,
       address: address ?? this.address,
       name: name ?? this.name,
-      connection: connection ?? this.connection,
+      connection: connection ?? (setToNull ? null : this.connection),
     );
   }
 }

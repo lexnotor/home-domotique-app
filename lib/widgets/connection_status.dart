@@ -29,8 +29,7 @@ class _ConnectionStatusState extends State<ConnectionStatus> {
   Widget build(BuildContext context) {
     return BlocBuilder<BTConnectionBloc, BTConnection>(
       builder: (context, state) {
-        final isConnected = state.state == BluetoothState.STATE_ON ||
-            state.state == BluetoothState.STATE_BLE_ON;
+        final isConnected = state.connection?.isConnected ?? false;
 
         return Container(
           alignment: Alignment.center,

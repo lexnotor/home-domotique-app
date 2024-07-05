@@ -17,6 +17,12 @@ class DeviceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     void connectTo() async {
       try {
+        if (await FlutterBluetoothSerial.instance.isDiscovering ?? false) {
+          await FlutterBluetoothSerial.instance.cancelDiscovery();
+          if (context.mounted) {
+            context.read<BTDevicesBloc>().add(SearchDevices(false));
+          }
+        }
         final connection =
             await BluetoothConnection.toAddress(discoveryResult.device.address);
 
@@ -51,6 +57,12 @@ class DeviceCard extends StatelessWidget {
     }
 
     void bondeTo() async {
+      if (await FlutterBluetoothSerial.instance.isDiscovering ?? false) {
+       await FlutterBluetoothSerial.instance.cancelDiscovery();
+        if (context.mounted) {
+          context.read<BTDevicesBloc>().add(SearchDevices(false));
+        }
+      }
       if (discoveryResult.device.isBonded) {
         return;
       }

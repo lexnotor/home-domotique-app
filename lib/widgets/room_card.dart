@@ -7,6 +7,7 @@ import 'package:home_domotique/constant.dart';
 import 'package:home_domotique/services/bt_connection.bloc.dart';
 import 'package:home_domotique/services/room.bloc.dart';
 import 'package:home_domotique/services/room.dart';
+import 'package:home_domotique/widgets/custom_button.dart';
 
 class RoomCard extends StatelessWidget {
   final Room room;
@@ -20,13 +21,13 @@ class RoomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     void switchCmd(bool switchOn) async {
       final connection = context.read<BTConnectionBloc>().state.connection;
-      if (connection == null || !connection.isConnected) return;
-
-      connection.output.add(Uint8List.fromList(
-        utf8.encode(
-          switchOn ? room.upCmd.toString() : room.downCmd.toString(),
-        ),
-      ));
+      if (connection == null || !connection.isConnected) {
+        return;
+      }
+      final value = switchOn ? room.upCmd.toString() : room.downCmd.toString();
+      connection.output.add(
+        Uint8List.fromList(utf8.encode("$value\r\n")),
+      );
       try {
         await connection.output.allSent;
         if (context.mounted) {
@@ -35,7 +36,7 @@ class RoomCard extends StatelessWidget {
               );
         }
       } catch (e) {
-        //
+        // print(e);
       }
     }
 
@@ -53,25 +54,36 @@ class RoomCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Switch(
-            value: room.state,
-            onChanged: (val) {
-              switchCmd(val);
-            },
-            trackColor: MaterialStateColor.resolveWith(
-              (states) {
-                return states.contains(MaterialState.selected)
-                    ? darkPrimaryColor
-                    : primaryTextColor;
-              },
-            ),
-            thumbColor: MaterialStateColor.resolveWith(
-              (states) {
-                return states.contains(MaterialState.selected)
-                    ? primaryTextColor
-                    : backgroundColor;
-              },
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Switch(
+                value: room.state,
+                onChanged: (val) {
+                  switchCmd(val);
+                },
+                trackColor: MaterialStateColor.resolveWith(
+                  (states) {
+                    return states.contains(MaterialState.selected)
+                        ? darkPrimaryColor
+                        : primaryTextColor;
+                  },
+                ),
+                thumbColor: MaterialStateColor.resolveWith(
+                  (states) {
+                    return states.contains(MaterialState.selected)
+                        ? primaryTextColor
+                        : backgroundColor;
+                  },
+                ),
+              ),
+              CustomButton(
+                onPressed: () {
+                  context.read<RoomBloc>().add(DeleteRom(room));
+                },
+                icon: const Icon(Icons.delete),
+              ),
+            ],
           ),
           Text(
             room.name,

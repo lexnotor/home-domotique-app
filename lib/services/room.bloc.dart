@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:home_domotique/services/room.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:uuid/uuid.dart';
 
 sealed class RoomEvents {}
 
@@ -26,11 +27,17 @@ final class NewRoom extends RoomEvents {
   );
 }
 
+final class DeleteRom extends RoomEvents {
+  final Room room;
+  DeleteRom(this.room);
+}
+
 final class InitEvent extends RoomEvents {}
 
 class RoomBloc extends Bloc<RoomEvents, List<Room>> {
   SharedPreferences? _prefs;
   static const _checkCmd = -1;
+  final uuid = const Uuid();
 
   RoomBloc(List<Room> rooms) : super(rooms) {
     on<SwitchRoom>((event, emit) {
@@ -48,15 +55,29 @@ class RoomBloc extends Bloc<RoomEvents, List<Room>> {
       try {
         final serializedRooms = await _deserialize();
         final newRoom = Room(
-          id: serializedRooms.length,
+          id: uuid.v1(),
           name: event.name,
           state: false,
           downCmd: event.downCmd,
           upCmd: event.upCmd,
         );
 
-        _serialize([...serializedRooms, newRoom]);
+        await _serialize([...serializedRooms, newRoom]);
         emit([...serializedRooms, newRoom]);
+        add(CheckRoomsState());
+      } catch (e) {
+        //
+      }
+    });
+
+    on<DeleteRom>((event, emit) async {
+      try {
+        final serializedRooms = await _deserialize();
+        serializedRooms.removeWhere(
+          (item) => item.id == event.room.id,
+        );
+        await _serialize(serializedRooms);
+        emit(serializedRooms);
         add(CheckRoomsState());
       } catch (e) {
         //

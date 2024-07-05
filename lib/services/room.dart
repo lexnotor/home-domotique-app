@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 @immutable
 class Room {
   final bool state;
-  final String name;
-  final int id, upCmd, downCmd;
+  final String name, id;
+  final int upCmd, downCmd;
 
   const Room({
     required this.id,
@@ -16,7 +16,7 @@ class Room {
 
   factory Room.fromJson(Map<String, dynamic> json) {
     return Room(
-      id: json["id"],
+      id: json["id"] is int ? (json["id"] as int).toString() : json["id"],
       name: json["name"],
       state: json["state"],
       downCmd: json["downCmd"],
